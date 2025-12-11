@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>O Desafio dos Geômetras de Tangramópolis</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      color: #222;
+      background-image: url('fundo-floresta-geometrica.png');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 10px;
+      background: linear-gradient(135deg, #4256b8, #8a4dd9);
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.9rem;
+    }
+
+    header p {
+      margin: 8px 0 0;
+      font-size: 0.95rem;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 20px auto 40px;
+      padding: 0 10px 30px;
+      background: rgba(255,255,255,0.88);
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .intro-box {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      margin: 15px 10px 20px;
+      font-size: 0.95rem;
+      border-left: 6px solid #ffb300;
+    }
+
+    .intro-box strong {
+      color: #d35400;
+    }
+
+    .level-title {
+      margin: 25px 10px 10px;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .level-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      color: #fff;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .level-mestre { background: #2e7d32; }
+    .level-princesa { background: #c2185b; }
+    .level-feiticeiro { background: #6a1b9a; }
+
+    .question-card {
+      display: flex;
+      gap: 12px;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 0 10px 16px;
+      box-shadow: 0 3px 7px rgba(0,0,0,0.12);
+      border-left: 6px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-card::after {
+      content: "";
+      position: absolute;
+      right: -40px;
+      bottom: -40px;
+      width: 90px;
+      height: 90px;
+      opacity: 0.1;
+      background: radial-gradient(circle, #ffffff, transparent 60%);
+    }
+
+    .question-card[data-character="mestre"] {
+      border-left-color: #2e7d32;
+      background: linear-gradient(90deg, #e8f5e9, #ffffff);
+    }
+
+    .question-card[data-character="princesa"] {
+      border-left-color: #c2185b;
+      background: linear-gradient(90deg, #fce4ec, #ffffff);
+    }
+
+    .question-card[data-character="feiticeiro"] {
+      border-left-color: #6a1b9a;
+      background: linear-gradient(90deg, #f3e5f5, #ffffff);
+    }
+
+    .question-card.locked {
+      display: none;
+    }
+
+    .avatar {
+      flex: 0 0 80px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .avatar img {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+      background: #f5f5f5;
+    }
+
+    .content {
+      flex: 1;
+    }
+
+    .speech-bubble {
+      background: #f5f7ff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      position: relative;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
+
+    .question-card[data-character="mestre"] .speech-bubble {
+      background: #edf7ee;
+    }
+
+    .question-card[data-character="princesa"] .speech-bubble {
+      background: #fde4f0;
+    }
+
+    .question-card[data-character="feiticeiro"] .speech-bubble {
+      background: #f3e6ff;
+    }
+
+    .speech-bubble::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 18px;
+      width: 0;
+      height: 0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+      border-right: 8px solid #f5f7ff;
+    }
+
+    .question-card[data-character="mestre"] .speech-bubble::before {
+      border-right-color: #edf7ee;
+    }
+
+    .question-card[data-character="princesa"] .speech-bubble::before {
+      border-right-color: #fde4f0;
+    }
+
+    .question-card[data-character="feiticeiro"] .speech-bubble::before {
+      border-right-color: #f3e6ff;
+    }
+
+    .character-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .question-stem {
+      margin: 4px 0;
+    }
+
+    .options {
+      margin-top: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .option-btn {
+      text-align: left;
+      border: 1px solid #c1c9ff;
+      background: #e6ebff;
+      border-radius: 8px;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s, transform 0.05s, box-shadow 0.1s;
+    }
+
+    .option-btn:hover {
+      background: #d7e0ff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+
+    .option-btn:active {
+      transform: scale(0.98);
+    }
+
+    .option-btn.correct {
+      background: #c8f7c5;
+      border-color: #4caf50;
+    }
+
+    .option-btn.incorrect {
+      background: #ffd6d6;
+      border-color: #f44336;
+    }
+
+    .feedback {
+      margin-top: 6px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      min-height: 18px;
+    }
+
+    .feedback.ok {
+      color: #2e7d32;
+    }
+
+    .feedback.no {
+      color: #c62828;
+    }
+
+    .unlock-hint {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      margin-top: 2px;
+    }
+
+    .unlock-hint span {
+      color: #ff6f00;
+      font-weight: bold;
+    }
+
+    #final-message {
+      margin: 30px 12px 10px;
+      text-align: center;
+    }
+
+    #final-card {
+      background: rgba(255,255,255,0.98);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+      border-left: 6px solid #ff9800;
+    }
+
+    #final-card p {
+      margin: 6px 0;
+      font-size: 0.97rem;
+      font-weight: bold;
+    }
+
+    #final-card img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-top: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    #restart-btn {
+      margin-top: 18px;
+      display: inline-block;
+      background: #3949ab;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    #restart-btn:hover {
+      background: #283593;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        border-radius: 0;
+        margin: 0;
+      }
+
+      .question-card {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .avatar {
+        justify-content: flex-start;
+      }
+
+      .speech-bubble::before {
+        left: 18px;
+        top: -8px;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-bottom: 8px solid #f5f7ff;
+        border-top: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>O Desafio dos Geômetras de Tangramópolis</h1>
+  <p>Responda aos desafios do Mestre Q. Uadrado, da Princesa P. Erímetro e do Feiticeiro A.R.E.A. e prove que domina a conservação de área no tangram!</p>
+</header>
+
+<main>
+  <div class="intro-box">
+    <p><strong>História:</strong> A Praça Central de Tangramópolis foi quebrada em 7 Peças Mágicas. Sua missão é mostrar, desafio a desafio, que mesmo mudando a forma das figuras, a área pode permanecer a mesma.</p>
+    <p>As questões aparecem em sequência: <strong>você só avança para o próximo desafio quando acerta o atual</strong>. Leia o enunciado, escolha uma alternativa e veja o comentário do personagem abaixo.</p>
+  </div>
+
+  <!-- ================== NÍVEL MESTRE ================== -->
+  <h2 class="level-title">
+    <span class="level-badge level-mestre">Nível M – Mestre Q. Uadrado</span>
+    <span>Propriedades básicas e identificação</span>
+  </h2>
+
+  <!-- M1 -->
+  <div class="question-card" data-correct="c" data-character="mestre">
+    <div class="avatar">
+      <img src="mestre_quadrado.png" alt="Mestre Q. Uadrado">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Mestre Q. Uadrado:</div>
+        <div class="question-stem">
+          “Jovem Geômetra, para reconstruir a Praça Central, você precisa conhecer suas peças. O quadrado do tangram pode ser decomposto em quantas e quais Peças Mágicas?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Duas peças idênticas, ambas quadrados menores.</button>
+          <button class="option-btn" data-option="b">b) Duas peças triangulares de mesma área.</button>
+          <button class="option-btn" data-option="c">c) Sete peças, sendo 5 triângulos de diferentes tamanhos, 1 quadrado e 1 paralelogramo.</button>
+          <button class="option-btn" data-option="d">d) Qualquer número de peças, dependendo da vontade do jogador.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- M2 -->
+  <div class="question-card locked" data-correct="b" data-character="mestre">
+    <div class="avatar">
+      <img src="mestre_quadrado.png" alt="Mestre Q. Uadrado">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Mestre Q. Uadrado:</div>
+        <div class="question-stem">
+          “Alguns aprendizes dizem que, juntando apenas os triângulos, já conseguimos o quadrado original. Isso é verdade em Tangramópolis?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Verdadeira, porque a maior parte do tangram é formada por triângulos.</button>
+          <button class="option-btn" data-option="b">b) Falsa, porque, mesmo juntando os triângulos, ainda faltam o quadrado e o paralelogramo para completar a área total.</button>
+          <button class="option-btn" data-option="c">c) Verdadeira apenas se os triângulos forem reorganizados como paralelogramos.</button>
+          <button class="option-btn" data-option="d">d) Verdadeira apenas se os triângulos estiverem rotacionados da maneira correta.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- M3 -->
+  <div class="question-card locked" data-correct="a" data-character="mestre">
+    <div class="avatar">
+      <img src="mestre_quadrado.png" alt="Mestre Q. Uadrado">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Mestre Q. Uadrado:</div>
+        <div class="question-stem">
+          “Quando você gira ou arrasta uma Peça Mágica do tangram, o que acontece com a área dessa peça?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) As peças podem ser rearranjadas sem alterar sua área individual.</button>
+          <button class="option-btn" data-option="b">b) As peças podem ter a área alterada quando são rotacionadas.</button>
+          <button class="option-btn" data-option="c">c) A decomposição altera o valor da área de cada peça.</button>
+          <button class="option-btn" data-option="d">d) A decomposição só é possível quando a figura final é um quadrado.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- M4 -->
+  <div class="question-card locked" data-correct="c" data-character="mestre">
+    <div class="avatar">
+      <img src="mestre_quadrado.png" alt="Mestre Q. Uadrado">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Mestre Q. Uadrado:</div>
+        <div class="question-stem">
+          “Um Guardião confundiu os símbolos da bandeira de Tangramópolis e disse: ‘Todo losango é um quadrado!’ Qual é a relação correta entre quadrado e losango?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Todo losango tem quatro lados iguais e quatro ângulos retos.</button>
+          <button class="option-btn" data-option="b">b) Todo losango é um quadrado.</button>
+          <button class="option-btn" data-option="c">c) Todo quadrado é um tipo especial de losango, mas nem todo losango é quadrado.</button>
+          <button class="option-btn" data-option="d">d) Losango é um quadrilátero com lados diferentes e apenas um par de lados paralelos.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- M5 -->
+  <div class="question-card locked" data-correct="a" data-character="mestre">
+    <div class="avatar">
+      <img src="mestre_quadrado.png" alt="Mestre Q. Uadrado">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Mestre Q. Uadrado:</div>
+        <div class="question-stem">
+          “Ao montar um retângulo com as peças do tangram, um aluno perguntou: ‘Será que todo retângulo é um paralelogramo mesmo?’ O que você responde?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Todo retângulo é um paralelogramo, pois tem dois pares de lados opostos paralelos e quatro ângulos retos.</button>
+          <button class="option-btn" data-option="b">b) Retângulo é qualquer quadrilátero que tenha pelo menos um ângulo reto.</button>
+          <button class="option-btn" data-option="c">c) Todo retângulo é um quadrado.</button>
+          <button class="option-btn" data-option="d">d) Nenhum retângulo pode ser formado com peças de tangram.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- ================== NÍVEL PRINCESA ================== -->
+  <h2 class="level-title">
+    <span class="level-badge level-princesa">Nível P – Princesa P. Erímetro</span>
+    <span>Conservação de área e composição de figuras</span>
+  </h2>
+
+  <!-- P1 -->
+  <div class="question-card locked" data-correct="b" data-character="princesa">
+    <div class="avatar">
+      <img src="princesa_perimetro.png" alt="Princesa P. Erímetro">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Princesa P. Erímetro:</div>
+        <div class="question-stem">
+          “Reorganizei todas as 7 Peças Mágicas para formar um gato. O que acontece com a área total da figura em relação à Praça Central original?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) A área total da figura aumenta porque as peças mudam de formato.</button>
+          <button class="option-btn" data-option="b">b) A área total permanece a mesma, pois não há cortes adicionais nem sobreposição.</button>
+          <button class="option-btn" data-option="c">c) A área diminui, já que muda o contorno da figura.</button>
+          <button class="option-btn" data-option="d">d) A área depende da cor escolhida para a figura.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- P2 -->
+  <div class="question-card locked" data-correct="a" data-character="princesa">
+    <div class="avatar">
+      <img src="princesa_perimetro.png" alt="Princesa P. Erímetro">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Princesa P. Erímetro:</div>
+        <div class="question-stem">
+          “Se um construtor usa apenas 4 peças do tangram para criar um templo retangular, qual é a área desse novo templo?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) A área é igual à soma das áreas das 4 peças utilizadas.</button>
+          <button class="option-btn" data-option="b">b) A área é igual à área do tangram inteiro.</button>
+          <button class="option-btn" data-option="c">c) A área depende da forma escolhida, não da quantidade de peças.</button>
+          <button class="option-btn" data-option="d">d) A área é sempre o dobro da área do paralelogramo.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- P3 -->
+  <div class="question-card locked" data-correct="a" data-character="princesa">
+    <div class="avatar">
+      <img src="princesa_perimetro.png" alt="Princesa P. Erímetro">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Princesa P. Erímetro:</div>
+        <div class="question-stem">
+          “Um decreto em Tangramópolis diz: ‘Se duas figuras diferentes usam exatamente as mesmas peças, então elas têm a mesma área.’ Essa frase é verdadeira? Por quê?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Verdadeira, porque a área depende da soma da área das peças, não da forma.</button>
+          <button class="option-btn" data-option="b">b) Falsa, porque figuras diferentes sempre têm áreas diferentes.</button>
+          <button class="option-btn" data-option="c">c) Verdadeira apenas se ambas forem convexas.</button>
+          <button class="option-btn" data-option="d">d) Verdadeira apenas quando as peças formam um polígono regular.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- P4 -->
+  <div class="question-card locked" data-correct="c" data-character="princesa">
+    <div class="avatar">
+      <img src="princesa_perimetro.png" alt="Princesa P. Erímetro">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Princesa P. Erímetro:</div>
+        <div class="question-stem">
+          “Ao montar uma figura diferente com as mesmas peças, percebo que o contorno externo (perímetro) pode mudar bastante. O que acontece com a área total?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) A forma final determina a área da figura.</button>
+          <button class="option-btn" data-option="b">b) A área depende apenas do tamanho do contorno da figura.</button>
+          <button class="option-btn" data-option="c">c) A área permanece constante, mesmo que o perímetro mude.</button>
+          <button class="option-btn" data-option="d">d) A área diminui se a figura for muito alongada.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- P5 -->
+  <div class="question-card locked" data-correct="a" data-character="princesa">
+    <div class="avatar">
+      <img src="princesa_perimetro.png" alt="Princesa P. Erímetro">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Princesa P. Erímetro:</div>
+        <div class="question-stem">
+          “Preciso saber se é possível formar paralelogramos diferentes usando combinações de apenas 3 peças do tangram. O que você acha?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) É possível formar paralelogramos diferentes usando diferentes combinações de peças.</button>
+          <button class="option-btn" data-option="b">b) É impossível formar qualquer paralelogramo com menos de 5 peças.</button>
+          <button class="option-btn" data-option="c">c) É possível formar apenas um único paralelogramo.</button>
+          <button class="option-btn" data-option="d">d) Só se forma paralelogramo se uma das peças for o quadrado.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- ================== NÍVEL FEITICEIRO ================== -->
+  <h2 class="level-title">
+    <span class="level-badge level-feiticeiro">Nível A – Feiticeiro A.R.E.A.</span>
+    <span>Raciocínio aprofundado e justificativa</span>
+  </h2>
+
+  <!-- A1 -->
+  <div class="question-card locked" data-correct="b" data-character="feiticeiro">
+    <div class="avatar">
+      <img src="feiticeiro_area.png" alt="Feiticeiro A.R.E.A.">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Feiticeiro A.R.E.A.:</div>
+        <div class="question-stem">
+          “Dois triângulos de mesma área foram encaixados por um aprendiz. Ele disse: ‘Se eles têm o mesmo tamanho, sempre viram um quadrado quando juntamos.’ Você concorda?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Se somarmos dois triângulos de mesma área, sempre teremos a mesma área de um quadrado.</button>
+          <button class="option-btn" data-option="b">b) Ao juntar dois triângulos de mesma área, a área total será o dobro da área de um dos triângulos, mas a forma pode ser um quadrado, um retângulo ou outra figura, dependendo de como forem encaixados.</button>
+          <button class="option-btn" data-option="c">c) Dois triângulos de mesma área nunca podem formar um quadrado.</button>
+          <button class="option-btn" data-option="d">d) Dois triângulos de mesma área formam obrigatoriamente um círculo.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- A2 -->
+  <div class="question-card locked" data-correct="b" data-character="feiticeiro">
+    <div class="avatar">
+      <img src="feiticeiro_area.png" alt="Feiticeiro A.R.E.A.">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Feiticeiro A.R.E.A.:</div>
+        <div class="question-stem">
+          “Você precisa provar que sabe montar um trapézio com as Peças Mágicas. Como ele pode ser formado usando o tangram?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) Usando apenas o quadrado e o paralelogramo, pois trapézios exigem ângulos retos.</button>
+          <button class="option-btn" data-option="b">b) Combinando duas ou mais peças que resultem em um quadrilátero com exatamente um par de lados paralelos — por exemplo, unindo dois triângulos ou misturando triângulos com o paralelogramo.</button>
+          <button class="option-btn" data-option="c">c) Apenas com o uso dos triângulos pequenos, pois eles são os únicos que permitem lados paralelos.</button>
+          <button class="option-btn" data-option="d">d) Apenas usando as sete peças do tangram ao mesmo tempo.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o próximo desafio.</div>
+    </div>
+  </div>
+
+  <!-- A3 -->
+  <div class="question-card locked" data-correct="a" data-character="feiticeiro">
+    <div class="avatar">
+      <img src="feiticeiro_area.png" alt="Feiticeiro A.R.E.A.">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Feiticeiro A.R.E.A.:</div>
+        <div class="question-stem">
+          “Alguns duvidam que seja possível formar um trapézio usando apenas duas peças do tangram. O que você diria sobre essa afirmação?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) A afirmação está correta: é possível formar um trapézio unindo duas ou mais peças que produzam um quadrilátero com exatamente um par de lados paralelos.</button>
+          <button class="option-btn" data-option="b">b) A afirmação está incorreta: todo trapézio precisa ter dois pares de lados paralelos.</button>
+          <button class="option-btn" data-option="c">c) A afirmação está incorreta: só é possível formar trapézio usando o quadrado e o paralelogramo juntos.</button>
+          <button class="option-btn" data-option="d">d) A afirmação está correta apenas se o trapézio tiver quatro ângulos retos.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Acerte para liberar o último desafio.</div>
+    </div>
+  </div>
+
+  <!-- A4 -->
+  <div class="question-card locked" data-correct="a" data-character="feiticeiro">
+    <div class="avatar">
+      <img src="feiticeiro_area.png" alt="Feiticeiro A.R.E.A.">
+    </div>
+    <div class="content">
+      <div class="speech-bubble">
+        <div class="character-name">Feiticeiro A.R.E.A.:</div>
+        <div class="question-stem">
+          “Desafio Final! Montei um trapézio usando quatro triângulos equiláteros. Se eu usar esses mesmos quatro triângulos para montar um retângulo, o que acontece com a área total?”
+        </div>
+        <div class="options">
+          <button class="option-btn" data-option="a">a) A área permanece a mesma, porque ela depende da soma das peças usadas, e não da forma final construída.</button>
+          <button class="option-btn" data-option="b">b) A área muda porque retângulos sempre têm área maior que trapézios.</button>
+          <button class="option-btn" data-option="c">c) A área só permanece a mesma se o retângulo tiver os mesmos ângulos do trapézio.</button>
+          <button class="option-btn" data-option="d">d) A área depende da orientação das peças no plano.</button>
+        </div>
+      </div>
+      <div class="feedback"></div>
+      <div class="unlock-hint">Você está perto de concluir o desafio!</div>
+    </div>
+  </div>
+
+  <!-- MENSAGEM FINAL -->
+  <div id="final-message" style="display:none;">
+    <div id="final-card">
+      <p>🎉 <strong>Parabéns, Jovem Geômetra!</strong></p>
+      <p>Você concluiu todos os desafio.</p>
+            <img src="missao-tangramopolis.png" alt="Missão concluída em Tangramópolis">
+      <button id="restart-btn">🔄 Recomeçar o Desafio</button>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const feedbackText = {
+    mestre: {
+      ok: "Muito bem, Jovem Geômetra! Você compreendeu a ideia do Mestre Q. Uadrado.",
+      no: "Reflita mais um pouco: observe as peças e suas propriedades com atenção."
+    },
+    princesa: {
+      ok: "Excelente! A Princesa P. Erímetro ficou satisfeita com o seu raciocínio.",
+      no: "Algo não fechou nas medidas... pense de novo na relação entre forma, perímetro e área."
+    },
+    feiticeiro: {
+      ok: "Impressionante! Você superou mais um enigma do Feiticeiro A.R.E.A.",
+      no: "O Feiticeiro ainda está em vantagem. Revise os conceitos de composição e conservação de área."
+    }
+  };
+
+  const cards = Array.from(document.querySelectorAll('.question-card'));
+  const finalBox = document.getElementById('final-message');
+  const restartBtn = document.getElementById('restart-btn');
+
+  // marca todas como não feitas inicialmente
+  cards.forEach(card => {
+    card.dataset.done = "false";
+    const feedback = card.querySelector('.feedback');
+    if (feedback) {
+      feedback.textContent = '';
+      feedback.classList.remove('ok', 'no');
+    }
+  });
+
+  cards.forEach(card => {
+    const correct = card.dataset.correct;
+    const character = card.dataset.character;
+    const options = card.querySelectorAll('.option-btn');
+    const feedback = card.querySelector('.feedback');
+
+    options.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const chosen = btn.getAttribute('data-option');
+        const alreadyDone = card.dataset.done === "true";
+
+        // limpa estados anteriores
+        options.forEach(b => b.classList.remove('correct', 'incorrect'));
+
+        if (chosen === correct) {
+          btn.classList.add('correct');
+          feedback.textContent = feedbackText[character].ok;
+          feedback.classList.add('ok');
+          feedback.classList.remove('no');
+
+          if (!alreadyDone) {
+            card.dataset.done = "true";
+
+            const idx = cards.indexOf(card);
+            const nextCard = cards[idx + 1];
+
+            if (nextCard) {
+              nextCard.classList.remove('locked');
+              setTimeout(() => {
+                nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 400);
+            } else {
+              // não há próximo card -> mostrar mensagem final
+              if (finalBox) {
+                finalBox.style.display = 'block';
+                setTimeout(() => {
+                  finalBox.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 500);
+              }
+            }
+          }
+        } else {
+          btn.classList.add('incorrect');
+          feedback.textContent = feedbackText[character].no;
+          feedback.classList.add('no');
+          feedback.classList.remove('ok');
+        }
+      });
+    });
+  });
+
+  if (restartBtn) {
+    restartBtn.addEventListener('click', () => {
+      // esconde a mensagem final
+      if (finalBox) {
+        finalBox.style.display = 'none';
+      }
+
+      // bloqueia todas novamente, exceto a primeira
+      cards.forEach((card, index) => {
+        card.dataset.done = "false";
+        card.classList.add('locked');
+        const feedback = card.querySelector('.feedback');
+        if (feedback) {
+          feedback.textContent = '';
+          feedback.classList.remove('ok', 'no');
+        }
+        card.querySelectorAll('.option-btn').forEach(btn => {
+          btn.classList.remove('correct', 'incorrect');
+        });
+        if (index === 0) {
+          card.classList.remove('locked');
+        }
+      });
+
+      // volta ao topo do jogo
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script>
+</body>
+</html>
